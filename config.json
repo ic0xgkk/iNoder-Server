@@ -1,0 +1,9 @@
+{
+  "db_host": "192.168.x.x",
+  "db_port": 3306,
+  "db_user": "xxx",
+  "db_password": "xxxx",
+  "db_name": "xxxx",
+  "s_host": "0.0.0.0",
+  "s_port": 2006
+}
