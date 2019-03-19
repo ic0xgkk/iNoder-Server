@@ -125,7 +125,7 @@ class FlaskApp(object):
 
             sql = "INSERT INTO LoginLog(username, sysTime, log) VALUES(%s, %s, %s)"
             strtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            ip = str(flask.request.remote_addr)
+            ip = str(flask.request.headers['X-Real-Ip'])
             log = "Username %s which named %s login succeed from %s at %s" % (user, data[1], ip, strtime)
             try:
                 cursor.execute(sql, (user, strtime, log))
