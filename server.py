@@ -26,11 +26,13 @@ class Database(object):
                                        db=config['db_name'],
                                        charset='utf8')
 
+    def __del__(self):
+        self.connect.close()
+
 
 class FlaskApp(object):
-    def __init__(self, db):
+    def __init__(self):
         self.app = flask.Flask(__name__)
-        self.db = db
         self.cookies = []
         self.config = None
         self.url_route()
@@ -96,7 +98,8 @@ class FlaskApp(object):
         user = str(user)
         pwd = str(pwd)
 
-        cursor = self.db.connect.cursor()
+        db = Database(self.config)
+        cursor = db.connect.cursor()
         sql = "SELECT username, stu_name, stu_id, stu_pwd, stu_ip FROM User WHERE username=%s AND password=%s"
         cursor.execute(sql, (user, pwd))
 
@@ -115,6 +118,7 @@ class FlaskApp(object):
             """
             cursor.close()
             del cursor, sql
+            del db
             return html
         else:
             data = list(data)
@@ -129,9 +133,9 @@ class FlaskApp(object):
             log = "Username %s which named %s login succeed from %s at %s" % (user, data[1], ip, strtime)
             try:
                 cursor.execute(sql, (user, strtime, log))
-                self.db.connect.commit()
+                db.connect.commit()
             except pymysql.Error as e:
-                self.db.connect.rollback()
+                db.connect.rollback()
                 logging.error("Database failed %s" % e)
             cookie = hashlib.sha256()
             cookie.update((str(int(time.time())) + str(data[0]) + str(data[1])).encode('utf-8'))
@@ -153,6 +157,7 @@ class FlaskApp(object):
             resp.set_cookie(key="INODER", value=str(cookie), expires=int(time.time())+10*60, path='/')
             cursor.close()
             del cursor, sql
+            del db
             return resp
 
     def cookies_scheduler(self):
@@ -280,23 +285,26 @@ class FlaskApp(object):
             else:
                 return "Permission Denied"
 
-            cursor = self.db.connect.cursor()
+            db = Database(self.config)
+            cursor = db.connect.cursor()
             sql = "INSERT INTO OperateLog(username, operateType, sysTime, log) VALUES(%s, %s, %s, %s)"
             strtime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
             try:
                 cursor.execute(sql, (data[0], op, strtime, msg))
-                self.db.connect.commit()
+                db.connect.commit()
             except pymysql.Error as e:
-                self.db.connect.rollback()
+                db.connect.rollback()
                 logging.error("Database failed %s" % e)
             cursor.close()
             del cursor, sql
+            del db
 
             return html
 
 
-def schedule_login(db):
+def schedule_login(config):
+    db = Database(config)
     cursor = db.connect.cursor()
     sql = "SELECT username, stu_name, stu_id, stu_pwd, stu_ip FROM User"
     cursor.execute(sql)
@@ -306,6 +314,7 @@ def schedule_login(db):
     if data is None:
         cursor.close()
         del cursor, sql
+        del db
         return None
 
     data = list(data)
@@ -343,17 +352,18 @@ def schedule_login(db):
             logging.error("Database failed %s" % e)
     cursor.close()
     del cursor, sql
+    del db
 
 
 def init():
     with open("config.json", "r", encoding='utf-8') as f:
         config = json.load(f)
         f.close()
-    db = Database(config)
-    fapp = FlaskApp(db)
+
+    fapp = FlaskApp()
     fapp.config = config
 
-    schedule.every().day.at("07:05").do(schedule_login, db)
+    schedule.every().day.at("07:05").do(schedule_login, config)
 
     t = threading.Thread(target=fapp.cookies_scheduler, args=())
     t.daemon = True
