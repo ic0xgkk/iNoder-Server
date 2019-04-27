@@ -1,9 +1,13 @@
 {
-  "db_host": "192.168.x.x",
-  "db_port": 3306,
-  "db_user": "xxx",
-  "db_password": "xxxx",
-  "db_name": "xxxx",
-  "s_host": "0.0.0.0",
-  "s_port": 2006
+  "username": "170000000000",
+  "password": "1234",
+  "ifname": "eth0",
+  "ros_ifname": "bridge-wan",
+  "PIN": 111111,
+  "host": "192.168.5.1",
+  "ros_user": "admin",
+  "ros_pwd": "password",
+  "api_port": 8728,
+  "use_ssl": false,
+  "verify_ssl": false
 }
