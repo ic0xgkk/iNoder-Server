@@ -1,9 +1,16 @@
 {
-  "db_host": "192.168.x.x",
-  "db_port": 3306,
-  "db_user": "xxx",
-  "db_password": "xxxx",
-  "db_name": "xxxx",
-  "s_host": "0.0.0.0",
-  "s_port": 2006
+  "user": [
+    {
+      "name": "只是个备注而已，名字",
+      "addr": "客户端设备IP",
+      "username": "用户名",
+      "password": "密码"
+    }],
+  "blocked": [
+    {
+      "name": "只是个名字",
+      "addr": "客户端设备IP"
+    }
+  ],
+  "interface": "ens192"
 }
